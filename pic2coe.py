@@ -9,18 +9,18 @@ def rgb2bin(tuple, bit_per_channel):
     if (bit_per_channel < 8):
         for i in tuple:
             scale = i >> (8 - bit_per_channel)
-            form = "{0:0%db}" % bit_per_channel
+            form = "{0:0%dx}" % ((bit_per_channel + 3) // 4)
             binstr += form.format(scale)
     else:
         for i in tuple:
-            form = "{0:0%db}" % bit_per_channel
+            form = "{0:0%dx}" % ((bit_per_channel + 3) // 4)
             binstr += form.format(i)
     return binstr
 
 
 def main():
-    parser = argparse.ArgumentParser(description="A tool to change picture to .mif file.")
-    parser.add_argument('-w', '--width', type=int, default=5, help="Bit per channel, by default 8", )
+    parser = argparse.ArgumentParser(description="A tool to change picture to .coe file.")
+    parser.add_argument('-w', '--width', type=int, default=8, help="Bit per channel, by default 8", )
     parser.add_argument('input_file', help="Input pic file name")
     parser.add_argument('-o', '--output', help="Output file name.")
     args = parser.parse_args()
@@ -30,7 +30,7 @@ def main():
     output_filename = args.output
 
     if output_filename is None:
-        output_filename = os.path.basename(input_filename).split('.')[0] + ".mif"
+        output_filename = os.path.basename(input_filename).split('.')[0] + ".coe"
 
     print("> Running with depth %d, output file name '%s'" % (bit_per_channel, output_filename))
 
@@ -38,32 +38,26 @@ def main():
     pwidth, pheight = im.size
     print("> Reading pic. Width: %d, Height: %d" % (pwidth, pheight))
 
-    header = "-- Generated with pic2mif by florianso\n"
-
-    mif_header = """
-WIDTH=%d;
-DEPTH=%d;
-
-ADDRESS_RADIX=UNS;
-DATA_RADIX=BIN;
-
-CONTENT BEGIN
-""" % (bit_per_channel * 3, pwidth * pheight)
+    
+    coe_header = "memory_initialization_radix=16;\nmemory_initialization_vector=\n"
 
     outf = open(output_filename, 'w')
-    outf.write(header)
-    outf.write(mif_header)
+    outf.write(coe_header)
 
-    count = 0
+    count = 1
     for h in range(0, pheight):
         for w in range(0, pwidth):
             pixel = im.getpixel((w, h))
-            line = "\t%d : %s;\n" % (count, rgb2bin(pixel, bit_per_channel))
+            if count == pwidth * pheight :
+                line = "%s;" % (rgb2bin(pixel, bit_per_channel))
+            else:
+                line = "%s,\n" % (rgb2bin(pixel, bit_per_channel))
             print(line)
             outf.write(line)
+            print(count)
             count += 1
 
-    outf.write("END;")
+    
 
     im.close()
     outf.close()
