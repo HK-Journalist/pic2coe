@@ -1,4 +1,4 @@
-# pic2mif
+# pic2coe
 
 ## Dependencies
 * Python 3
@@ -6,9 +6,9 @@
 
 ## Usage
 ```
-pic2mif.py [-h] [-w WIDTH] [-o OUTPUT] input_file
+pic2coe.py [-h] [-w WIDTH] [-o OUTPUT] input_file
 
-A tool to change picture to .mif file.
+A tool to change picture to .coe file.
 
 positional arguments:
   input_file            Input pic file name
